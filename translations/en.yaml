@@ -1,0 +1,61 @@
+configuration:
+  telegram_api_id:
+    name: Telegram api_id
+    description: Telegram api_id from https://my.telegram.org (user client).
+  telegram_api_hash:
+    name: Telegram api_hash
+    description: Telegram api_hash from https://my.telegram.org (user client).
+  telegram_session:
+    name: Telegram session
+    description: Telegram user session string generated via GramJS/Telethon.
+  telegram_channel:
+    name: Telegram channel
+    description: Channel username (without @) or numeric id to listen to.
+  prefix:
+    name: Prefix
+    description: Schedule prefix to extract (e.g. 3.1).
+  switch_entity:
+    name: Switch entity
+    description: Home Assistant switch entity to control (legacy single).
+  switch_entities:
+    name: Switch entities
+    description: List of Home Assistant switch entities to control.
+  timezone:
+    name: Timezone
+    description: Timezone used to interpret dates/times in posts (e.g. Europe/Kyiv).
+  message_hint:
+    name: Message hint
+    description: Optional hint/prefix phrase to help the LLM focus on the right line.
+  provider:
+    name: Provider
+    description: LLM provider; openai, claude, ollama, or auto (default ollama).
+  openai_api_key:
+    name: OpenAI API key
+    description: OpenAI API key.
+  openai_model:
+    name: OpenAI model
+    description: OpenAI model name (default gpt-3.5-turbo).
+  claude_api_key:
+    name: Claude API key
+    description: Claude (Anthropic) API key.
+  claude_model:
+    name: Claude model
+    description: Claude model name (default claude-3-sonnet-20240229).
+  ollama_host:
+    name: Ollama host
+    description: Ollama cloud API host (default https://api.ollama.com).
+  ollama_api_key:
+    name: Ollama API key
+    description: Ollama cloud API bearer token.
+  ollama_model:
+    name: Ollama model
+    description: Ollama model name (default llama2).
+  loop_seconds:
+    name: Loop seconds
+    description: How often to evaluate/call the switch service (seconds, default 60).
+  on_lead_seconds:
+    name: On lead seconds
+    description: Seconds before range start to switch ON (default 60). Use -1 to disable ON trigger.
+  off_delay_seconds:
+    name: Off delay seconds
+    description: Seconds after range start to switch OFF (default 3600). Use -1 to disable OFF trigger.
