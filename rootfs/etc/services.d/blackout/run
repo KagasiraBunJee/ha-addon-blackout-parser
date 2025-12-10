@@ -1,0 +1,6 @@
+#!/usr/bin/with-contenv bashio
+set -euo pipefail
+
+bashio::log.info "Starting Blackout Time Parser"
+cd /opt/blackout-time-parser
+exec node dist/index.js

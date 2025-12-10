@@ -1,0 +1,18 @@
+# Node / TypeScript build artifacts
+node_modules/
+dist/
+rootfs/opt/blackout-time-parser/node_modules/
+rootfs/opt/blackout-time-parser/dist/
+npm-debug.log*
+yarn-error.log*
+
+# Env and options
+.env
+/data/
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/*
+!.vscode/tasks.json

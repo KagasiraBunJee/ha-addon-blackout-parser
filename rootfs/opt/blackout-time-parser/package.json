@@ -1,0 +1,30 @@
+{
+  "name": "blackout-time-parser",
+  "version": "0.1.0",
+  "description": "Home Assistant add-on for parsing blackout schedules from Telegram posts with LLMs.",
+  "main": "dist/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node dist/index.js",
+    "build": "tsc",
+    "dev": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.19.0",
+    "axios": "^1.6.7",
+    "express": "^4.18.2",
+    "luxon": "^3.4.3",
+    "node-schedule": "^2.1.1",
+    "ollama": "^0.5.7",
+    "openai": "^4.19.0",
+    "telegram": "^2.22.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/luxon": "^3.7.1",
+    "@types/node": "^20.10.5",
+    "@types/node-schedule": "^2.1.8",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
+}
