@@ -1,5 +1,5 @@
 name: Blackout Time Parser
-version: "0.6.0"
+version: "0.6.2"
 init: false
 slug: blackout_time_parser
 description: "Parses Telegram channel blackout schedules with LLMs and toggles a Home Assistant switch."
