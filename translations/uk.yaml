@@ -31,7 +31,7 @@ configuration:
     description: Необов’язкова підказка/фраза для LLM.
   provider:
     name: Провайдер
-    description: LLM провайдер: openai, claude, ollama або auto (за замовчуванням ollama).
+    description: "LLM провайдер: openai, claude, ollama або auto (за замовчуванням ollama)."
   openai_api_key:
     name: Ключ OpenAI
     description: API ключ OpenAI.

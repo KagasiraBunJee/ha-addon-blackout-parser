@@ -31,7 +31,7 @@ configuration:
     description: Optional hint/prefix phrase to help the LLM focus on the right line.
   provider:
     name: Provider
-    description: LLM provider: openai, claude, ollama, or auto (default ollama).
+    description: "LLM provider: openai, claude, ollama, or auto (default ollama)."
   openai_api_key:
     name: OpenAI API key
     description: OpenAI API key.

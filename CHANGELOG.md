@@ -10,6 +10,9 @@
 - Improve translations (HA-compatible YAML) so config descriptions display.
 - Store last action event in readable timestamp.
 
+## 0.7.1
+- Localized placeholders and table headers; fixed YAML translation parsing; tightened layout sizing.
+
 ## 0.7.0
 - Added i18n: add-on config translations now in YAML; UI/server translations via locale-specific JSON; notifications and UI text localized (en/uk).
 - Switched UI to server-rendered Pug template served from Express; UI fetches i18n via /api/i18n.
