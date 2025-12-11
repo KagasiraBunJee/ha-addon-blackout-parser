@@ -8,7 +8,6 @@ export interface Options {
   telegram_session?: string;
   telegram_channel?: string;
   prefix: string;
-  switch_entity?: string;
   switch_entities?: string[];
   timezone: string;
   message_hint?: string;
@@ -20,9 +19,10 @@ export interface Options {
   ollama_model?: string;
   ollama_api_key?: string;
   provider?: "openai" | "claude" | "ollama" | "auto" | string;
-  loop_seconds?: number;
   on_lead_seconds?: number;
   off_delay_seconds?: number;
+  notifiers?: string[];
+  locale?: string;
 }
 
 const DEFAULTS: Options = {
@@ -31,9 +31,10 @@ const DEFAULTS: Options = {
   message_hint: "",
   ollama_host: "https://api.ollama.com",
   provider: "ollama",
-  loop_seconds: 60,
   on_lead_seconds: 60,
   off_delay_seconds: 3600,
+  notifiers: [],
+  locale: "en",
 };
 
 const OPTIONS_PATH = "/data/options.json";
@@ -62,8 +63,9 @@ const envOptions = (): Partial<Options> => {
     telegram_session: process.env.TELEGRAM_SESSION,
     telegram_channel: process.env.TELEGRAM_CHANNEL,
     prefix: process.env.PREFIX,
-  switch_entity: process.env.SWITCH_ENTITY,
-  switch_entities: process.env.SWITCH_ENTITIES ? process.env.SWITCH_ENTITIES.split(",").map(s => s.trim()).filter(Boolean) : undefined,
+    switch_entities: process.env.SWITCH_ENTITIES
+      ? process.env.SWITCH_ENTITIES.split(",").map((s) => s.trim()).filter(Boolean)
+      : undefined,
     timezone: process.env.TIMEZONE,
     message_hint: process.env.MESSAGE_HINT,
     openai_api_key: process.env.OPENAI_API_KEY,
@@ -74,9 +76,12 @@ const envOptions = (): Partial<Options> => {
     ollama_model: process.env.OLLAMA_MODEL,
     ollama_api_key: process.env.OLLAMA_API_KEY,
     provider: (process.env.PROVIDER as Options["provider"]) ?? undefined,
-    loop_seconds: process.env.LOOP_SECONDS ? Number(process.env.LOOP_SECONDS) : undefined,
     on_lead_seconds: process.env.ON_LEAD_SECONDS ? Number(process.env.ON_LEAD_SECONDS) : undefined,
     off_delay_seconds: process.env.OFF_DELAY_SECONDS ? Number(process.env.OFF_DELAY_SECONDS) : undefined,
+    notifiers: process.env.NOTIFIERS
+      ? process.env.NOTIFIERS.split(",").map((s) => s.trim()).filter(Boolean)
+      : undefined,
+    locale: process.env.LOCALE,
   };
 };
 

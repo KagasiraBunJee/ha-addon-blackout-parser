@@ -3,7 +3,8 @@ import { DateTime } from "luxon";
 import { Options } from "../helpers/config.js";
 import { State } from "../helpers/state.js";
 import { parseTime } from "../helpers/schedule.js";
-import { callHomeAssistantSwitch } from "./ha.js";
+import { callHomeAssistantSwitch, sendNotifications } from "./ha.js";
+import { t } from "../helpers/i18n.js";
 
 type JobMap = Record<string, { on?: Job; off?: Job }>;
 const scheduledJobs: JobMap = {};
@@ -45,10 +46,7 @@ export const scheduleSwitchJobs = async (
   state: State,
 ) => {
   cancelAllJobs();
-  const targetSwitches = [
-    ...(options.switch_entities || []).filter(Boolean),
-    ...(options.switch_entity ? [options.switch_entity] : []),
-  ];
+  const targetSwitches = [...(options.switch_entities || []).filter(Boolean)];
   if (!state.schedule || targetSwitches.length === 0) return;
 
   const leadSeconds = options.on_lead_seconds ?? 60;
@@ -77,7 +75,12 @@ export const scheduleSwitchJobs = async (
         await callHomeAssistantSwitch(targetSwitches, desired);
         markExecuted(key, desired);
         const ts = DateTime.now().setZone(options.timezone).toFormat("yyyy-MM-dd HH:mm:ss");
-        appendEvent(state, `switch ${desired} at ${ts}`);
+        appendEvent(state, t(options.locale, desired === "on" ? "event_on" : "event_off", { ts }));
+        if (options.notifiers && options.notifiers.length && desired === "on") {
+          const msg = t(options.locale, "notify_on", { seconds: options.on_lead_seconds ?? 60 });
+          const title = t(options.locale, "notify_title");
+          await sendNotifications(options.notifiers, title, msg);
+        }
       };
 
       if (onAt && offAt && !executed[key]?.on && now >= onAt && now < offAt) {

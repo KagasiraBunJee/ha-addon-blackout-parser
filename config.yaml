@@ -1,5 +1,5 @@
 name: Blackout Time Parser
-version: "0.6.2"
+version: "0.7.0"
 init: false
 slug: blackout_time_parser
 description: "Parses Telegram channel blackout schedules with LLMs and toggles a Home Assistant switch."
@@ -23,7 +23,6 @@ options:
   telegram_session: ""
   telegram_channel: ""
   prefix: "3.1"
-  switch_entity: ""
   switch_entities: []
   timezone: "Europe/Kyiv"
   message_hint: ""
@@ -35,16 +34,16 @@ options:
   ollama_api_key: ""
   ollama_model: ""
   provider: "ollama"
-  loop_seconds: 60
   on_lead_seconds: 60
   off_delay_seconds: 3600
+  notifiers: []
+  locale: "en"
 schema:
   telegram_api_id: str?
   telegram_api_hash: str?
   telegram_session: str?
   telegram_channel: str
   prefix: str
-  switch_entity: str?
   switch_entities:
     - str
   timezone: str?
@@ -57,6 +56,8 @@ schema:
   ollama_api_key: str?
   ollama_model: str?
   provider: str?
-  loop_seconds: int?
   on_lead_seconds: int?
   off_delay_seconds: int?
+  notifiers:
+    - str
+  locale: str?

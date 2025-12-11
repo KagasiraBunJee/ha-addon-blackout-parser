@@ -1,4 +1,10 @@
 configuration:
+  name:
+    name: Add-on Name
+    description: Blackout Time Parser
+  description:
+    name: Description
+    description: Listens to Telegram channel posts, extracts blackout schedules with LLMs, and toggles Home Assistant switches.
   telegram_api_id:
     name: Telegram api_id
     description: Telegram api_id from https://my.telegram.org (user client).
@@ -14,9 +20,6 @@ configuration:
   prefix:
     name: Prefix
     description: Schedule prefix to extract (e.g. 3.1).
-  switch_entity:
-    name: Switch entity
-    description: Home Assistant switch entity to control (legacy single).
   switch_entities:
     name: Switch entities
     description: List of Home Assistant switch entities to control.
@@ -28,7 +31,7 @@ configuration:
     description: Optional hint/prefix phrase to help the LLM focus on the right line.
   provider:
     name: Provider
-    description: LLM provider; openai, claude, ollama, or auto (default ollama).
+    description: LLM provider: openai, claude, ollama, or auto (default ollama).
   openai_api_key:
     name: OpenAI API key
     description: OpenAI API key.
@@ -50,12 +53,15 @@ configuration:
   ollama_model:
     name: Ollama model
     description: Ollama model name (default llama2).
-  loop_seconds:
-    name: Loop seconds
-    description: How often to evaluate/call the switch service (seconds, default 60).
   on_lead_seconds:
     name: On lead seconds
     description: Seconds before range start to switch ON (default 60). Use -1 to disable ON trigger.
   off_delay_seconds:
     name: Off delay seconds
     description: Seconds after range start to switch OFF (default 3600). Use -1 to disable OFF trigger.
+  notifiers:
+    name: Notifiers
+    description: List of Home Assistant notify targets (e.g., mobile_app_*).
+  locale:
+    name: Locale
+    description: Locale code for notifications/logs (e.g., en, uk).

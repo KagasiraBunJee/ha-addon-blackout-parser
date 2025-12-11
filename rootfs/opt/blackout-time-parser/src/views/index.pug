@@ -1,0 +1,226 @@
+doctype html
+html(lang="en")
+  head
+    meta(charset="UTF-8")
+    meta(name="viewport", content="width=device-width, initial-scale=1")
+    title Blackout Time Parser
+    style.
+      :root { color-scheme: light; font-family: "Helvetica Neue", Arial, sans-serif; background: #0f172a; color: #e2e8f0; }
+      body { margin: 0 auto; padding: 24px; max-width: 960px; box-sizing: border-box; }
+      h1 { margin-top: 0; }
+      .card { background: #111827; border: 1px solid #1f2937; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.25); }
+      .grid { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); }
+      label { display: block; margin-bottom: 8px; font-weight: 600; }
+      textarea, input[type="text"] { width: 100%; box-sizing: border-box; background: #0b1222; color: #e2e8f0; border: 1px solid #1f2937; border-radius: 8px; padding: 10px; }
+      textarea { min-height: 140px; }
+      button { background: linear-gradient(135deg,#22d3ee,#6366f1); color: #0b1222; border: none; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer; }
+      button:hover { opacity: 0.95; }
+      .pill { display: inline-block; padding: 4px 8px; border-radius: 999px; background: #1f2937; font-size: 12px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { text-align: left; padding: 8px; border-bottom: 1px solid #1f2937; }
+      small { color: #94a3b8; }
+  body
+    h1#title Blackout Time Parser
+    .grid
+      .card
+        h3#config-title Configuration
+        #config
+      .card
+        h3#current-title Current Schedule
+        #schedule
+      .card
+        h3#all-title All Schedules
+        #all-schedules
+
+    .card
+      h3#test-title Test Parse
+      p#test-desc Paste a Telegram post to validate parsing.
+      label(for="text" id="message-label") Message
+      textarea#text(placeholder="Paste Telegram post text here")
+      div(style="margin-top:10px;")
+        button#parse Parse
+        button#reset(style="margin-left:8px;background:#f97316;color:#0b1222;") Reset schedules
+        span#parse-status.pill
+      pre#parse-result
+
+    .card
+      h3#notify-title Send Test Notification
+      p#notify-desc Send a test notification to configured notifiers.
+      label(for="notify-title-input" id="notify-title-label") Notification title
+      input#notify-title-input(type="text" placeholder="Notification title")
+      label(for="notify-message" id="notify-message-label") Notification message
+      textarea#notify-message(placeholder="Notification message")
+      div(style="margin-top:10px;")
+        button#notify-send Send
+        span#notify-status.pill
+
+    script.
+      const apiBase = (() => {
+        const m = window.location.pathname.match(/^\/api\/hassio_ingress\/[^/]+/);
+        return m ? m[0] : '';
+      })();
+
+      let i18n = {};
+
+      const tr = (key) => (i18n && i18n[key]) || key;
+
+      const loadI18n = async () => {
+        try {
+          const res = await fetch(`${apiBase}/api/i18n`);
+          i18n = await res.json();
+        } catch (e) {
+          console.warn('i18n load failed', e);
+        }
+        applyI18n();
+      };
+
+      const applyI18n = () => {
+        document.getElementById('title').textContent = tr('title');
+        document.getElementById('config-title').textContent = tr('config');
+        document.getElementById('current-title').textContent = tr('current_schedule');
+        document.getElementById('all-title').textContent = tr('all_schedules');
+        document.getElementById('test-title').textContent = tr('test_parse');
+        document.getElementById('test-desc').textContent = tr('test_parse_desc');
+        document.getElementById('message-label').textContent = tr('message');
+        document.getElementById('parse').textContent = tr('btn_parse');
+        document.getElementById('reset').textContent = tr('btn_reset');
+        document.getElementById('notify-title').textContent = tr('notify_title');
+        document.getElementById('notify-desc').textContent = tr('notify_desc');
+        document.getElementById('notify-message-label').textContent = tr('notify_message');
+        document.getElementById('notify-title-label').textContent = tr('notify_title_label');
+        document.getElementById('notify-send').textContent = tr('btn_notify');
+        const textArea = document.getElementById('text');
+        if (textArea) textArea.placeholder = tr('placeholder_message');
+        const notifyTitleInput = document.getElementById('notify-title-input');
+        if (notifyTitleInput) notifyTitleInput.placeholder = tr('placeholder_notify_title');
+        const notifyMessage = document.getElementById('notify-message');
+        if (notifyMessage) notifyMessage.placeholder = tr('placeholder_notify_message');
+      };
+
+      const loadStatus = async () => {
+        if (!Object.keys(i18n).length) await loadI18n();
+        const res = await fetch(`${apiBase}/api/status`);
+        const data = await res.json();
+        renderConfig(data.config);
+        renderSchedule(data.state?.schedules, data.state?.next_window);
+        renderAllSchedules(data.state?.schedules);
+      };
+
+      const renderConfig = (cfg) => {
+        const ns = tr('not_set');
+        const el = document.getElementById('config');
+        el.innerHTML = `
+          <div><strong>${tr('channel')}:</strong> ${cfg.telegram_channel || ns}</div>
+          <div><strong>${tr('prefix')}:</strong> ${cfg.prefix || ns}</div>
+          <div><strong>${tr('switches')}:</strong> ${cfg.switch_entities && cfg.switch_entities.length ? cfg.switch_entities.join(', ') : ns}</div>
+          <div><strong>${tr('timezone')}:</strong> ${cfg.timezone || ns}</div>
+          <div><strong>${tr('telegram_mode')}:</strong> ${cfg.telegram_mode || ns}</div>
+          <div><strong>${tr('llm')}:</strong> ${cfg.llm_provider || ns}</div>
+          <div><strong>${tr('provider')}:</strong> ${cfg.provider || 'auto'}</div>
+          <div><strong>${tr('scheduled_jobs')}:</strong> ${cfg.scheduled_jobs ?? 0}</div>
+          <div><strong>${tr('hint')}:</strong> ${cfg.message_hint || '—'}</div>
+        `;
+      };
+
+      const renderSchedule = (schedules, nextWindow) => {
+        const el = document.getElementById('schedule');
+        const today = new Date().toISOString().slice(0, 10);
+        const todaySchedule = schedules && schedules[today];
+        if (!todaySchedule) {
+          el.innerHTML = `<small>${tr('no_schedule')}</small>`;
+          return;
+        }
+        const rows = todaySchedule.ranges.map((r) => `<tr><td>${r.start}</td><td>${r.end}</td></tr>`).join('');
+        const next = nextWindow && nextWindow.date === today ? nextWindow : null;
+        const nextHtml = next
+          ? `<div><strong>${tr('next_window')}</strong> ${next.range.start} - ${next.range.end}</div>`
+          : `<div><strong>${tr('next_window_none')}</strong></div>`;
+        el.innerHTML = `
+          <div><span class="pill">${todaySchedule.source}</span></div>
+          <div><strong>${tr('date')}:</strong> ${todaySchedule.date}</div>
+          <div><strong>${tr('prefix_label')}:</strong> ${todaySchedule.prefix}</div>
+          ${nextHtml}
+          <table><thead><tr><th>${tr('start')}</th><th>${tr('end')}</th></tr></thead><tbody>${rows}</tbody></table>
+          <small>${tr('parsed_at')} ${todaySchedule.parsed_at}</small>
+        `;
+      };
+
+      const renderAllSchedules = (schedules) => {
+        const el = document.getElementById('all-schedules');
+        if (!schedules || Object.keys(schedules).length === 0) {
+          el.innerHTML = `<small>${tr('no_schedules')}</small>`;
+          return;
+        }
+        const items = Object.entries(schedules)
+          .sort(([a], [b]) => (a > b ? 1 : -1))
+          .map(([date, sched]) => {
+            const rows = (sched.ranges || [])
+              .map((r) => `<li>${r.start} - ${r.end}</li>`)
+              .join('');
+            return `<div style="margin-bottom:10px;"><strong>${date}</strong><ul>${rows}</ul></div>`;
+          })
+          .join('');
+        el.innerHTML = items;
+      };
+
+      document.getElementById('parse').addEventListener('click', async () => {
+        const text = document.getElementById('text').value;
+        const statusEl = document.getElementById('parse-status');
+        statusEl.textContent = tr('status_parsing');
+        try {
+          const res = await fetch(`${apiBase}/api/test-parse`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text }),
+          });
+          const raw = await res.text();
+          let payload = null;
+          try { payload = JSON.parse(raw); } catch (e) { payload = { parse_error: String(e), raw }; }
+          statusEl.textContent = res.ok ? 'Done' : `${tr('status_error')} ${res.status}`;
+          document.getElementById('parse-result').textContent = JSON.stringify(payload, null, 2);
+        } catch (err) {
+          statusEl.textContent = tr('status_error');
+          document.getElementById('parse-result').textContent = String(err);
+        }
+        loadStatus();
+      });
+
+      document.getElementById('reset').addEventListener('click', async () => {
+        const statusEl = document.getElementById('parse-status');
+        statusEl.textContent = tr('status_resetting');
+        try {
+          const res = await fetch(`${apiBase}/api/reset`, { method: 'POST' });
+          const raw = await res.text();
+          let payload = null;
+          try { payload = JSON.parse(raw); } catch { payload = { parse_error: 'reset parse failed', raw }; }
+          statusEl.textContent = res.ok ? tr('status_reset') : `${tr('status_error')} ${res.status}`;
+        } catch (err) {
+          statusEl.textContent = tr('status_error');
+        }
+        loadStatus();
+      });
+
+      document.getElementById('notify-send').addEventListener('click', async () => {
+        const titleInput = document.getElementById('notify-title-input');
+        const messageInput = document.getElementById('notify-message');
+        const statusEl = document.getElementById('notify-status');
+        const msg = messageInput.value;
+        const title = titleInput.value || tr('notify_title');
+        statusEl.textContent = tr('status_sending');
+        try {
+          const res = await fetch(`${apiBase}/api/test-notify`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: msg, title }),
+          });
+          const raw = await res.text();
+          let payload = null;
+          try { payload = JSON.parse(raw); } catch { payload = { parse_error: 'notify parse failed', raw }; }
+          statusEl.textContent = res.ok ? tr('status_sent') : `${tr('status_error')} ${res.status}`;
+        } catch (err) {
+          statusEl.textContent = tr('status_error');
+        }
+      });
+
+      loadStatus();
+      setInterval(loadStatus, 15000);

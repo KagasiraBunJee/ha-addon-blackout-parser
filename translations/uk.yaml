@@ -1,0 +1,67 @@
+configuration:
+  name:
+    name: Назва доповнення
+    description: Blackout Time Parser
+  description:
+    name: Опис
+    description: Читає пости з Telegram, витягує графіки відключень за допомогою LLM і керує вимикачами Home Assistant.
+  telegram_api_id:
+    name: Telegram api_id
+    description: api_id з https://my.telegram.org (клієнт користувача).
+  telegram_api_hash:
+    name: Telegram api_hash
+    description: api_hash з https://my.telegram.org (клієнт користувача).
+  telegram_session:
+    name: Telegram сесія
+    description: Рядок сесії користувача, згенерований через GramJS/Telethon.
+  telegram_channel:
+    name: Telegram канал
+    description: Назва каналу (без @) або числовий id для прослуховування.
+  prefix:
+    name: Префікс
+    description: Префікс графіка (наприклад 3.1).
+  switch_entities:
+    name: Вимикачі
+    description: Список вимикачів Home Assistant для керування.
+  timezone:
+    name: Часовий пояс
+    description: Часовий пояс для інтерпретації дат/часу (наприклад Europe/Kyiv).
+  message_hint:
+    name: Підказка
+    description: Необов’язкова підказка/фраза для LLM.
+  provider:
+    name: Провайдер
+    description: LLM провайдер: openai, claude, ollama або auto (за замовчуванням ollama).
+  openai_api_key:
+    name: Ключ OpenAI
+    description: API ключ OpenAI.
+  openai_model:
+    name: Модель OpenAI
+    description: Назва моделі OpenAI (за замовчуванням gpt-3.5-turbo).
+  claude_api_key:
+    name: Ключ Claude
+    description: API ключ Claude (Anthropic).
+  claude_model:
+    name: Модель Claude
+    description: Назва моделі Claude (за замовчуванням claude-3-sonnet-20240229).
+  ollama_host:
+    name: Ollama host
+    description: Ollama cloud API host (за замовчуванням https://api.ollama.com).
+  ollama_api_key:
+    name: Ключ Ollama
+    description: Bearer токен Ollama cloud API.
+  ollama_model:
+    name: Модель Ollama
+    description: Назва моделі Ollama (за замовчуванням llama2).
+  on_lead_seconds:
+    name: Секунди до старту
+    description: Скільки секунд до початку інтервалу вмикати (за замовчуванням 60). -1 щоб вимкнути тригер ON.
+  off_delay_seconds:
+    name: Секунди після старту
+    description: Скільки секунд після початку інтервалу вимикати (за замовчуванням 3600). -1 щоб вимкнути тригер OFF.
+  notifiers:
+    name: Нотифікатори
+    description: Список сервісів notify-* Home Assistant (наприклад mobile_app_*).
+  locale:
+    name: Локаль
+    description: Код локалі для повідомлень/логів (наприклад en, uk).

@@ -9,3 +9,12 @@
 - Show all schedules and job count in the web UI; current schedule shows today only.
 - Improve translations (HA-compatible YAML) so config descriptions display.
 - Store last action event in readable timestamp.
+
+## 0.7.0
+- Added i18n: add-on config translations now in YAML; UI/server translations via locale-specific JSON; notifications and UI text localized (en/uk).
+- Switched UI to server-rendered Pug template served from Express; UI fetches i18n via /api/i18n.
+- Dropped legacy `switch_entity`; use `switch_entities` only.
+- Added `notifiers` to send HA notify calls on ON triggers; localized message with lead time.
+- Configurable lead/delay retained (`-1` disables triggers); multi-day scheduling preserved with cleanup of jobs after execution.
+- Added `locale` config; improved status/UI fields (job count, all schedules, today’s schedule).
+- Devcontainer mounts host Docker socket for HA tasks.
