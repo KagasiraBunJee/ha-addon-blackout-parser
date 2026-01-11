@@ -4,6 +4,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { Options } from "../helpers/config.js";
 import { Schedule, TimeRange } from "../helpers/state.js";
 import { parseNaturalDate, normalizeRange } from "../helpers/parser.js";
+import { DateTime } from "luxon";
 
 export type LLMProvider =
   | { kind: "openai"; client: OpenAI; model: string }
@@ -92,8 +93,17 @@ export const llmParse = async (
     }
     const parsed = extractJSON(content);
     if (!parsed || !parsed.date || !Array.isArray(parsed.ranges)) return null;
+    const now = DateTime.now().setZone(cfg.timezone);
+    const messageHasYear = /\b20\d{2}\b/.test(text);
+    let date = parseNaturalDate(parsed.date, cfg.timezone);
+    if (!messageHasYear) {
+      const dt = DateTime.fromISO(date, { zone: cfg.timezone });
+      if (dt.isValid && dt.year !== now.year) {
+        date = dt.set({ year: now.year }).toISODate()!;
+      }
+    }
     return {
-      date: parseNaturalDate(parsed.date, cfg.timezone),
+      date,
       prefix: parsed.prefix || cfg.prefix,
       ranges: parsed.ranges.map(normalizeRange).filter(Boolean) as TimeRange[],
     };
@@ -104,9 +114,11 @@ export const llmParse = async (
 };
 
 const buildLLMPrompt = (text: string, cfg: Options): string => {
+  const today = DateTime.now().setZone(cfg.timezone).toISODate();
   return [
     `Target prefix: ${cfg.prefix}`,
     cfg.message_hint ? `Hint: ${cfg.message_hint}` : "",
+    `Current date: ${today} (use this year if the post omits a year).`,
     "Extract the outage date (YYYY-MM-DD) and time ranges (HH:MM - HH:MM) for that prefix only.",
     'Output JSON: {"date":"YYYY-MM-DD","prefix":"<prefix>","ranges":[{"start":"HH:MM","end":"HH:MM"}, ...]}',
     "If missing data, return an empty object {}.",

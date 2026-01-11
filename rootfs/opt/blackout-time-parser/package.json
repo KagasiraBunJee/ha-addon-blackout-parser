@@ -1,6 +1,6 @@
 {
   "name": "blackout-time-parser",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Home Assistant add-on for parsing blackout schedules from Telegram posts with LLMs.",
   "main": "dist/index.js",
   "type": "module",

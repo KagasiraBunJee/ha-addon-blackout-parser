@@ -49,6 +49,7 @@ export const startTelegramClient = (
           if (!message) return;
           const text = (message.message || "").trim();
           if (!text) return;
+          console.log(`Telegram message received (id=${message.id})`);
           await onMessage(text, message.id);
         } catch (err) {
           console.error("Failed to process Telegram message", err);
