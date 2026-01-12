@@ -24,7 +24,7 @@ export const statusHandler =
         timezone: options.timezone,
         message_hint: options.message_hint,
         llm_provider: llmProvider?.kind ?? "none",
-      telegram_mode: telegramMode,
+        telegram_mode: options.telegram_mode || telegramMode,
       provider: options.provider || "auto",
       on_lead_seconds: options.on_lead_seconds ?? 60,
       off_delay_seconds: options.off_delay_seconds ?? 3600,

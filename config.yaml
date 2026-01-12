@@ -1,5 +1,5 @@
 name: Blackout Time Parser
-version: "0.7.2"
+version: "0.8.0"
 init: false
 slug: blackout_time_parser
 description: "Parses Telegram channel blackout schedules with LLMs and toggles a Home Assistant switch."
@@ -21,7 +21,11 @@ options:
   telegram_api_id: ""
   telegram_api_hash: ""
   telegram_session: ""
-  telegram_channel: ""
+  telegram_channel: []
+  telegram_mode: polling
+  telegram_poll_seconds: 300
+  telegram_poll_limit: 10
+  next_window_end_entity: ""
   prefix: "3.1"
   switch_entities: []
   timezone: "Europe/Kyiv"
@@ -42,7 +46,12 @@ schema:
   telegram_api_id: str?
   telegram_api_hash: str?
   telegram_session: str?
-  telegram_channel: str
+  telegram_channel:
+    - str
+  telegram_mode: list(polling|hybrid|events)
+  telegram_poll_seconds: int?
+  telegram_poll_limit: int?
+  next_window_end_entity: str?
   prefix: str
   switch_entities:
     - str

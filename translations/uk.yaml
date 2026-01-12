@@ -65,3 +65,15 @@ configuration:
   locale:
     name: Локаль
     description: Код локалі для повідомлень/логів (наприклад en, uk).
+  telegram_mode:
+    name: Режим отримання повідомлень Telegram
+    description: Режим отримання повідомлень Telegram: polling, hybrid, або events.
+  telegram_poll_seconds:
+    name: Секунди опитування Telegram (секунди)
+    description: Секунди опитування Telegram (за замовчуванням 300).
+  telegram_poll_limit:
+    name: Ліміт опитування Telegram
+    description: Максимальна кількість повідомлень для опитування за раз (за замовчуванням 10).
+  next_window_end_entity:
+    name: Сутність завершення інтервалу
+    description: Сутність input_datetime для запису часу завершення наступного інтервалу.

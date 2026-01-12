@@ -7,7 +7,7 @@ Codebase is TypeScript and compiled to `dist/` inside the add-on image. Main ent
 ## Add-on options (with descriptions)
 
 - `telegram_api_id` / `telegram_api_hash` / `telegram_session` – Credentials for the Telegram user client. `telegram_session` is a pre-generated session string; see “User account mode”.
-- `telegram_channel` – Channel username (without `@`) or numeric id to listen to (required).
+- `telegram_channel` – Array of channel usernames (without `@`) or numeric ids to listen to (required).
 - `prefix` – Identifier to extract (e.g. `3.1` from the sample posts).
 - `switch_entity` – Home Assistant switch entity to control.
 - `timezone` – Timezone for parsing and schedule checks (default `Europe/Kyiv`).
@@ -19,6 +19,10 @@ Codebase is TypeScript and compiled to `dist/` inside the add-on image. Main ent
 - `openai_api_key` / `openai_model` – OpenAI credentials and model (default `gpt-3.5-turbo`).
 - `claude_api_key` / `claude_model` – Claude credentials and model (default `claude-3-sonnet-20240229`).
 - `ollama_host` / `ollama_api_key` / `ollama_model` – Ollama cloud endpoint, bearer key, and model (default `llama2`). If multiple providers are set in auto mode, OpenAI is preferred, then Claude, then Ollama.
+- `telegram_mode` – `polling`, `events`, or `hybrid` (default `polling`).
+- `telegram_poll_seconds` – Poll interval for Telegram polling or hybrid mode (seconds, default 300).
+- `telegram_poll_limit` – How many recent messages to fetch per poll (default 10).
+- `next_window_end_entity` – `input_datetime` entity to set with the next window end when switching ON (e.g., `input_datetime.blackout_end`).
 
 ## How it works
 

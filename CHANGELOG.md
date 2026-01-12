@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.8.0
+- Support multiple Telegram channels via `telegram_channel` array.
+- Add `telegram_mode` (polling/events/hybrid), polling interval, and poll limit; polling fetches last N messages and runs an initial poll on startup.
+- Filter polled messages by prefix and ignore non-schedule text; validate LLM ranges to avoid invalid schedules.
+- Adjust LLM prompt/date handling to anchor to the current year when posts omit a year.
+- Keep only today/tomorrow schedules and fix scheduler to use multi-day schedules even when `state.schedule` is empty.
+- Add `next_window_end_entity` to update an `input_datetime` when switching ON.
+
 ## 0.6.2
 - Add multiple switch support (`switch_entities`) alongside the legacy `switch_entity`.
 - Support per-day schedules (store multiple dates in `state.schedules`) and compute next window across all dates.

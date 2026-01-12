@@ -1,7 +1,4 @@
 import axios from "axios";
-import { Options } from "../helpers/config.js";
-import { State } from "../helpers/state.js";
-
 export const callHomeAssistantSwitch = async (
   entityIds: string[],
   desiredState: "on" | "off",
@@ -24,6 +21,29 @@ export const callHomeAssistantSwitch = async (
     } catch (err: any) {
       console.error("Failed to call Home Assistant service", err.response?.data || err.message);
     }
+  }
+};
+
+export const setHomeAssistantDatetime = async (
+  entityId: string,
+  date: string,
+  time: string,
+): Promise<void> => {
+  const token = process.env.SUPERVISOR_TOKEN;
+  if (!token) {
+    console.warn("SUPERVISOR_TOKEN missing; cannot set datetime");
+    return;
+  }
+  const url = "http://supervisor/core/api/services/input_datetime/set_datetime";
+  try {
+    await axios.post(
+      url,
+      { entity_id: entityId, date, time },
+      { headers: { Authorization: `Bearer ${token}` } },
+    );
+    console.log(`Datetime ${entityId} -> ${date} ${time}`);
+  } catch (err: any) {
+    console.error(`Failed to set datetime ${entityId}`, err.response?.data || err.message);
   }
 };
 
