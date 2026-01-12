@@ -102,10 +102,14 @@ export const llmParse = async (
         date = dt.set({ year: now.year }).toISODate()!;
       }
     }
+    const ranges = (parsed.ranges as any[])
+      .map(normalizeRange)
+      .filter(isValidRange) as TimeRange[];
+    if (!ranges.length) return null;
     return {
       date,
       prefix: parsed.prefix || cfg.prefix,
-      ranges: parsed.ranges.map(normalizeRange).filter(Boolean) as TimeRange[],
+      ranges,
     };
   } catch (err) {
     console.warn("LLM parsing failed", (err as Error).message);
@@ -138,4 +142,14 @@ const extractJSON = (content: string): Record<string, any> | null => {
   } catch {
     return null;
   }
+};
+
+const isValidTime = (value: string): boolean => {
+  return /^([01]?\d|2[0-3]|24):[0-5]\d$/.test(value);
+};
+
+const isValidRange = (range: TimeRange): boolean => {
+  if (!range?.start || !range?.end) return false;
+  if (!isValidTime(range.start) || !isValidTime(range.end)) return false;
+  return range.start !== range.end;
 };

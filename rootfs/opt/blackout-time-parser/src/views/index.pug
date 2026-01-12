@@ -109,8 +109,9 @@ html(lang="en")
       const renderConfig = (cfg) => {
         const ns = tr('not_set');
         const el = document.getElementById('config');
+        const channels = Array.isArray(cfg.telegram_channel) ? cfg.telegram_channel.join(', ') : cfg.telegram_channel;
         el.innerHTML = `
-          <div><strong>${tr('channel')}:</strong> ${cfg.telegram_channel || ns}</div>
+          <div><strong>${tr('channel')}:</strong> ${channels || ns}</div>
           <div><strong>${tr('prefix')}:</strong> ${cfg.prefix || ns}</div>
           <div><strong>${tr('switches')}:</strong> ${cfg.switch_entities && cfg.switch_entities.length ? cfg.switch_entities.join(', ') : ns}</div>
           <div><strong>${tr('timezone')}:</strong> ${cfg.timezone || ns}</div>

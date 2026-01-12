@@ -35,6 +35,12 @@ export const parseMessage = async (
   cfg: Options,
   llm: LLMProvider,
 ): Promise<Pick<Schedule, "date" | "prefix" | "ranges" | "source"> | null> => {
+  const hasTimeRange = /(\d{1,2}:\d{2})\s*-\s*(\d{1,2}:\d{2})/.test(text);
+  const hasPrefix = cfg.prefix ? text.includes(cfg.prefix) : false;
+  const hasHint = cfg.message_hint ? text.includes(cfg.message_hint) : false;
+  if (!hasTimeRange && !hasPrefix && !hasHint) {
+    return null;
+  }
   const llmResult = await llmParse(text, cfg, llm);
   if (llmResult) {
     return { ...llmResult, source: "llm" };

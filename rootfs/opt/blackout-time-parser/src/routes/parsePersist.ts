@@ -29,6 +29,16 @@ export const parseAndPersistFactory = (
     };
     if (!state.schedules) state.schedules = {};
     state.schedules[parsed.date] = state.schedule;
+    const now = DateTime.now().setZone(options.timezone);
+    const today = now.toISODate()!;
+    const nextDay = now.plus({ days: 1 }).toISODate()!;
+    const keepDates = new Set([today, nextDay]);
+    state.schedules = Object.fromEntries(
+      Object.entries(state.schedules).filter(([date]) => keepDates.has(date)),
+    );
+    if (state.schedule && !keepDates.has(state.schedule.date)) {
+      state.schedule = state.schedules[today] ?? state.schedules[nextDay] ?? null;
+    }
     state.last_parsed_at = state.schedule.parsed_at;
     persistState(state);
     lastParsedTextHash = hash;

@@ -6,7 +6,7 @@ export interface Options {
   telegram_api_id?: string;
   telegram_api_hash?: string;
   telegram_session?: string;
-  telegram_channel?: string;
+  telegram_channel?: string[];
   prefix: string;
   switch_entities?: string[];
   timezone: string;
@@ -21,6 +21,10 @@ export interface Options {
   provider?: "openai" | "claude" | "ollama" | "auto" | string;
   on_lead_seconds?: number;
   off_delay_seconds?: number;
+  telegram_mode?: string;
+  telegram_poll_seconds?: number;
+  telegram_poll_limit?: number;
+  next_window_end_entity?: string;
   notifiers?: string[];
   locale?: string;
 }
@@ -33,6 +37,10 @@ const DEFAULTS: Options = {
   provider: "ollama",
   on_lead_seconds: 60,
   off_delay_seconds: 3600,
+  telegram_mode: "polling",
+  telegram_poll_seconds: 300,
+  telegram_poll_limit: 10,
+  next_window_end_entity: "",
   notifiers: [],
   locale: "en",
 };
@@ -49,6 +57,9 @@ export const loadOptions = (): Options => {
   } catch (err) {
     console.error("Failed to read options.json", err);
   }
+  if (typeof (fileOptions as any).telegram_channel === "string") {
+    (fileOptions as any).telegram_channel = [(fileOptions as any).telegram_channel];
+  }
   return {
     ...DEFAULTS,
     ...envOptions(),
@@ -61,7 +72,9 @@ const envOptions = (): Partial<Options> => {
     telegram_api_id: process.env.TELEGRAM_API_ID,
     telegram_api_hash: process.env.TELEGRAM_API_HASH,
     telegram_session: process.env.TELEGRAM_SESSION,
-    telegram_channel: process.env.TELEGRAM_CHANNEL,
+    telegram_channel: process.env.TELEGRAM_CHANNEL
+      ? process.env.TELEGRAM_CHANNEL.split(",").map((s) => s.trim()).filter(Boolean)
+      : undefined,
     prefix: process.env.PREFIX,
     switch_entities: process.env.SWITCH_ENTITIES
       ? process.env.SWITCH_ENTITIES.split(",").map((s) => s.trim()).filter(Boolean)
@@ -78,6 +91,14 @@ const envOptions = (): Partial<Options> => {
     provider: (process.env.PROVIDER as Options["provider"]) ?? undefined,
     on_lead_seconds: process.env.ON_LEAD_SECONDS ? Number(process.env.ON_LEAD_SECONDS) : undefined,
     off_delay_seconds: process.env.OFF_DELAY_SECONDS ? Number(process.env.OFF_DELAY_SECONDS) : undefined,
+    telegram_mode: process.env.TELEGRAM_MODE,
+    telegram_poll_seconds: process.env.TELEGRAM_POLL_SECONDS
+      ? Number(process.env.TELEGRAM_POLL_SECONDS)
+      : undefined,
+    telegram_poll_limit: process.env.TELEGRAM_POLL_LIMIT
+      ? Number(process.env.TELEGRAM_POLL_LIMIT)
+      : undefined,
+    next_window_end_entity: process.env.NEXT_WINDOW_END_ENTITY,
     notifiers: process.env.NOTIFIERS
       ? process.env.NOTIFIERS.split(",").map((s) => s.trim()).filter(Boolean)
       : undefined,

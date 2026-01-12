@@ -65,3 +65,15 @@ configuration:
   locale:
     name: Locale
     description: Locale code for notifications/logs (e.g., en, uk).
+  telegram_mode:
+    name: Telegram messages scraping mode
+    description: Telegram messages scraping mode: polling, hybrid, or events.
+  telegram_poll_seconds:
+    name: Telegram polling seconds (seconds)
+    description: Telegram polling interval in seconds (default 300).
+  telegram_poll_limit:
+    name: Telegram polling limit
+    description: Maximum number of messages to poll at a time (default 10).
+  next_window_end_entity:
+    name: Next window end entity
+    description: input_datetime entity to set with the next window end.

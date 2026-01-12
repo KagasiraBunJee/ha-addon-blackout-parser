@@ -3,7 +3,11 @@ import { DateTime } from "luxon";
 import { Options } from "../helpers/config.js";
 import { State } from "../helpers/state.js";
 import { parseTime } from "../helpers/schedule.js";
-import { callHomeAssistantSwitch, sendNotifications } from "./ha.js";
+import {
+  callHomeAssistantSwitch,
+  sendNotifications,
+  setHomeAssistantDatetime,
+} from "./ha.js";
 import { t } from "../helpers/i18n.js";
 
 type JobMap = Record<string, { on?: Job; off?: Job }>;
@@ -41,13 +45,33 @@ const markExecuted = (key: string, desired: "on" | "off") => {
   else executed[key].off = true;
 };
 
-export const scheduleSwitchJobs = async (
-  options: Options,
-  state: State,
-) => {
+const computeNextRangeEnd = (
+  schedules: State["schedules"] extends Record<string, infer T> ? T[] : any[],
+  timezone: string
+): DateTime | null => {
+  const now = DateTime.now().setZone(timezone);
+  let candidate: DateTime | null = null;
+  for (const sched of schedules) {
+    const date = DateTime.fromISO(sched.date, { zone: timezone });
+    if (!date.isValid) continue;
+    for (const range of sched.ranges) {
+      if (!range?.start || !range?.end) continue;
+      const start = parseTime(range.start, date);
+      const end = parseTime(range.end, date);
+      if (!start || !end) continue;
+      const endAdjusted = end < start ? end.plus({ days: 1 }) : end;
+      if (endAdjusted < now) continue;
+      if (!candidate || endAdjusted < candidate) {
+        candidate = endAdjusted;
+      }
+    }
+  }
+  return candidate;
+};
+
+export const scheduleSwitchJobs = async (options: Options, state: State) => {
   cancelAllJobs();
   const targetSwitches = [...(options.switch_entities || []).filter(Boolean)];
-  if (!state.schedule || targetSwitches.length === 0) return;
 
   const leadSeconds = options.on_lead_seconds ?? 60;
   const offDelaySeconds = options.off_delay_seconds ?? 3600;
@@ -55,8 +79,10 @@ export const scheduleSwitchJobs = async (
   const schedules = state.schedules
     ? Object.values(state.schedules)
     : state.schedule
-      ? [state.schedule]
-      : [];
+    ? [state.schedule]
+    : [];
+  if (!schedules.length) return;
+
   for (const sched of schedules) {
     const date = DateTime.fromISO(sched.date, { zone: options.timezone });
     if (!date.isValid) continue;
@@ -66,18 +92,41 @@ export const scheduleSwitchJobs = async (
       const key = `${sched.date}-${range.start}`;
       const start = parseTime(range.start, date);
       if (!start) continue;
-      const onAt = leadSeconds >= 0 ? start.minus({ seconds: leadSeconds }) : null;
-      const offAt = offDelaySeconds >= 0 ? start.plus({ seconds: offDelaySeconds }) : null;
+      const onAt =
+        leadSeconds >= 0 ? start.minus({ seconds: leadSeconds }) : null;
+      const offAt =
+        offDelaySeconds >= 0 ? start.plus({ seconds: offDelaySeconds }) : null;
 
       const maybeCall = async (desired: "on" | "off") => {
-        if (desired === "on" && executed[key]?.on) return;
-        if (desired === "off" && executed[key]?.off) return;
-        await callHomeAssistantSwitch(targetSwitches, desired);
+        if (targetSwitches.length > 0) {
+          if (desired === "on" && executed[key]?.on) return;
+          if (desired === "off" && executed[key]?.off) return;
+          await callHomeAssistantSwitch(targetSwitches, desired);
+        }
+        const nextEnd = options.next_window_end_entity
+          ? computeNextRangeEnd(schedules, options.timezone)
+          : null;
+        if (options.next_window_end_entity && nextEnd) {
+          const date = nextEnd.toISODate()!;
+          const time = nextEnd.toFormat("HH:mm:ss");
+          await setHomeAssistantDatetime(
+            options.next_window_end_entity,
+            date,
+            time
+          );
+        }
         markExecuted(key, desired);
-        const ts = DateTime.now().setZone(options.timezone).toFormat("yyyy-MM-dd HH:mm:ss");
-        appendEvent(state, t(options.locale, desired === "on" ? "event_on" : "event_off", { ts }));
+        const ts = DateTime.now()
+          .setZone(options.timezone)
+          .toFormat("yyyy-MM-dd HH:mm:ss");
+        appendEvent(
+          state,
+          t(options.locale, desired === "on" ? "event_on" : "event_off", { ts })
+        );
         if (options.notifiers && options.notifiers.length && desired === "on") {
-          const msg = t(options.locale, "notify_on", { seconds: options.on_lead_seconds ?? 60 });
+          const msg = t(options.locale, "notify_on", {
+            seconds: options.on_lead_seconds ?? 60,
+          });
           const title = t(options.locale, "notify_title");
           await sendNotifications(options.notifiers, title, msg);
         }
@@ -118,6 +167,7 @@ export const scheduleSwitchJobs = async (
     }
   }
 };
+
 export const getScheduledJobsCount = () => {
   let count = 0;
   for (const entry of Object.values(scheduledJobs)) {

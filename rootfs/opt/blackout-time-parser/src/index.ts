@@ -19,12 +19,18 @@ const options = loadOptions();
 const state = loadState();
 const llmProvider = buildLLMProvider(options);
 
+console.log("Blackout Time Parser boot: src/index.ts marker v4");
+
 const parseAndPersist = parseAndPersistFactory(options, state, llmProvider);
 
-const telegramHandle = startTelegramClient(options, bindTelegramHandler(state, parseAndPersist));
-const telegramMode = telegramHandle?.mode ?? "none";
+const bootstrap = async () => {
+  const telegramHandle = await startTelegramClient(options, bindTelegramHandler(state, parseAndPersist));
+  const telegramMode = telegramHandle?.mode ?? "none";
 
-// Schedule existing schedule on startup
-scheduleSwitchJobs(options, state).catch(console.error);
+  // Schedule existing schedule on startup
+  scheduleSwitchJobs(options, state).catch(console.error);
 
-createServer(options, state, llmProvider, telegramMode, parseAndPersist);
+  createServer(options, state, llmProvider, telegramMode, parseAndPersist);
+};
+
+bootstrap().catch((err) => console.error("Startup failed", err));
